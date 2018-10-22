@@ -17,8 +17,16 @@ set -xe
 SCRIPT_DIR="$(dirname "$(realpath "$0")")"
 source "$SCRIPT_DIR"/parameters.sh
 
-## INSTALL KOJI
-swupd bundle-add koji || true
+# INSTALL KOJI
+yum -y install postgresql-server koji koji-hub koji-web koji-builder koji-utils httpd mod_ssl mod_python
+pushd /etc/httpd/conf.d
+echo -n > autoindex.conf
+echo -n > kojihub.conf
+echo -n > kojiweb.conf
+echo -n > ssl.conf
+echo -n > userdir.conf
+echo -n > welcome.conf
+popd
 
 ## SETTING UP SSL CERTIFICATES FOR AUTHENTICATION
 KOJI_PKI_DIR=/etc/pki/koji
@@ -106,9 +114,9 @@ touch "$KOJI_PKI_DIR"/index.txt
 echo 01 > "$KOJI_PKI_DIR"/serial
 openssl genrsa -out "$KOJI_PKI_DIR"/private/koji_ca_cert.key 2048
 openssl req -subj "/C=$COUNTRY_CODE/ST=$STATE/L=$LOCATION/O=$ORGANIZATION/OU=koji_ca/CN=$KOJI_MASTER_FQDN" -config "$KOJI_PKI_DIR"/ssl.cnf -new -x509 -days 3650 -key "$KOJI_PKI_DIR"/private/koji_ca_cert.key -out "$KOJI_PKI_DIR"/koji_ca_cert.crt -extensions v3_ca
-mkdir -p /etc/ca-certs/trusted
-cp -a "$KOJI_PKI_DIR"/koji_ca_cert.crt /etc/ca-certs/trusted
-clrtrust generate
+mkdir -p /etc/pki/ca-trust/source/anchors
+cp -a "$KOJI_PKI_DIR"/koji_ca_cert.crt /etc/pki/ca-trust/source/anchors
+update-ca-trust
 
 # Generate the koji component certificates and the admin certificate and generate a PKCS12 user certificate (for web browser)
 cp "$SCRIPT_DIR"/gencert.sh "$KOJI_PKI_DIR"
@@ -209,7 +217,7 @@ EOF
 ## KOJI APPLICATION HOSTING
 # Koji Filesystem Skeleton
 mkdir -p "$KOJI_DIR"/{packages,repos,work,scratch,repos-dist}
-chown -R httpd:httpd "$KOJI_DIR"
+chown -R apache:apache "$KOJI_DIR"
 
 ## Apache Configuration Files
 mkdir -p /etc/httpd/conf.d
@@ -271,13 +279,6 @@ Listen 443
 </VirtualHost>
 EOF
 
-## Apache Configuration Files
-mkdir -p /etc/httpd/conf.modules.d
-cat > /etc/httpd/conf.modules.d/wsgi.conf <<- EOF
-LoadModule wsgi_module lib/python2.7/site-packages/mod_wsgi/server/mod_wsgi-py27.so
-WSGISocketPrefix /run/httpd/wsgi
-EOF
-
 systemctl enable --now httpd
 
 
@@ -306,7 +307,6 @@ mkdir -p /var/lib/mock
 chown -R root:mock /var/lib/mock
 
 # Setup User Accounts
-useradd -r kojibuilder
 usermod -G mock kojibuilder
 
 # Kojid Configuration Files
