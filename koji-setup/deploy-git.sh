@@ -39,6 +39,7 @@ if $IS_ANONYMOUS_GIT_NEEDED; then
 
 	[Service]
 	User=$GIT_USER
+	Group=$GIT_USER
 	ExecStart=-/usr/libexec/git-core/git-daemon --base-path=$GIT_DEFAULT_DIR/repositories --inetd --verbose
 	StandardInput=socket
 	EOF
@@ -141,7 +142,9 @@ if $IS_ANONYMOUS_GIT_NEEDED; then
 	Alias /cgit-data /usr/share/cgit
 	ScriptAlias /cgit /var/www/cgi-bin/cgit
 	<Directory "/usr/share/cgit">
-		Require all granted
+	    AllowOverride None
+	    Options None
+	    Require all granted
 	</Directory>
 	EOF
 	usermod -a -G "$GIT_USER" "$HTTPD_USER"
