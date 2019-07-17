@@ -29,8 +29,8 @@ repodir = file://$KOJI_DIR
 use_sqlite = True
 use_repoview = False
 EOF
-cat > /etc/mash/clear.mash <<- EOF
-[clear]
+cat > /etc/mash/centos-updates-mv.mash <<- EOF
+[centos-updates-mv]
 rpm_path = %(arch)s/os/Packages
 repodata_path = %(arch)s/os/
 source_path = source/SRPMS
