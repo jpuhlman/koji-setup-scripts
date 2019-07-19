@@ -6,7 +6,6 @@ RUN update-ca-certificates
 RUN apt-get update 
 RUN apt-get install -y koji-client
 RUN apt-get install -y python-krbv
-COPY ./.koji /koji
 RUN apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install -y locales \
     && sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen \
