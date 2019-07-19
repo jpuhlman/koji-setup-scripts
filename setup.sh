@@ -1,6 +1,6 @@
 #!/bin/bash
 echo -n "Root " 
-su -c "mkdir /etc/sudoers.d/; echo 'jenkins ALL=(ALL) NOPASSWD: ALL' | tee -a /etc/sudoers.d/visudo"
+su -c "mkdir -e /etc/sudoers.d/; echo 'jenkins ALL=(ALL) NOPASSWD: ALL' | tee -a /etc/sudoers.d/visudo"
 
 sudo ./koji-setup/deploy-koji.sh
 sudo ./koji-setup/bootstrap-build.sh

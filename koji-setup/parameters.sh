@@ -8,6 +8,7 @@ export KOJI_MOUNT_DIR=/mnt/koji
 
 export KOJI_MASTER_FQDN="$HOST"
 if [ -z "$KOJI_MASTER_FQDN" ] ; then
+	echo Need to set "HOST" to system fully qualified domain name
 	exit 1
 fi
 export KOJI_URL=https://"$KOJI_MASTER_FQDN"
