@@ -14,7 +14,7 @@ export KOJI_URL=https://"$KOJI_MASTER_FQDN"
 export KOJI_MOUNT_DIR=/mnt/koji
 export KOJI_SLAVE_FQDN="$KOJI_MASTER_FQDN"
 export KOJID_CAPACITY=16
-export TAG_NAME=centos-updates
+export TAG_NAME=centos-updates-mv
 # Use for koji SSL certificates
 export COUNTRY_CODE='US'
 export STATE='California'
@@ -34,7 +34,9 @@ export POSTGRES_DIR=/srv/pgsql
 
 ## GIT REPOSITORIES
 export GIT_DIR=/srv/git
-export GIT_FQDN="$KOJI_MASTER_FQDN"
+export GIT_FQDN="gitcentos.mvista.com"
+export GIT_PATH=/centos/upstream/packages/*
+export GIT_GETSOURCES=":common:/chroot_tmpdir/scmroot/common/get_sources.sh"
 export IS_ANONYMOUS_GIT_NEEDED=false
 export GITOLITE_PUB_KEY=''
 
