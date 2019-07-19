@@ -4,6 +4,11 @@ import jenkins.model.Jenkins
 import hudson.model.*
 import hudson.security.*
 def strategy = new GlobalMatrixAuthorizationStrategy()
+
+def repo = "git://gitcentos.mvista.com/centos/upstream/utils/centos-updates.git"
+def branch = "c7-mv"
+def cronTrigger = "H/5 * * * *"
+
 instance = Jenkins.getInstance()
 globalNodeProperties = instance.getGlobalNodeProperties()
 envVarsNodePropertyList = globalNodeProperties.getAll(EnvironmentVariablesNodeProperty.class)
@@ -22,59 +27,25 @@ if ( envVarsNodePropertyList == null || envVarsNodePropertyList.size() == 0 ) {
 envVars.put("DIST_TAG", "dist-centos-updates")
 
 instance.save()
-def pipelineScriptHead = '''
-pipeline {
-   agent any
-   stages {
-        stage('Initialize') {
-            steps {
-                //enable remote triggers
-                script {
-                    properties([pipelineTriggers([pollSCM('H/5 * * * *')])])
-                }
-                //define scm connection for polling
-'''
-def pipelineScriptTail = """
-            }
-                 }
-         stage ('Build') {
-               steps {
-                 sh '''
-                    if [ "\$BUILD_NUMBER" -eq "1" ] ; then 
-                          export KOJI_BUILD="echo"
-                    else 
-                          export KOJI_BUILD="koji build"
-                    fi
-                    \$KOJI_BUILD \$DIST_TAG \$(git config remote.origin.url)#\$(git rev-parse HEAD)
-                '''
-               }
-         }
-    }
-}
-"""
-
 
 String fileContents = new File('/var/jenkins_home/apps').getText('UTF-8')
-def branch = "c7"
-def urlBase = "git://gitcentos.mvista.com/centos/upstream/packages"
+
 for (String item: fileContents.split()) {
    if ( !Jenkins.instance.getItemByFullName(item) ) {
-	   def pipelineScript = pipelineScriptHead +
-	     "                git branch: '" + branch +"',  url: '" + urlBase + "/" + item + "'" +
-	     pipelineScriptTail
-
-	   def flowDefinition = new org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition(pipelineScript, true)
+           def scm = new GitSCM(repo)
+           scm.branches = [new BranchSpec("*/" + branch)];
+           def flowDefinition = new org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition(scm, "Jenkinsfile")
 
 	   def parent = Jenkins.instance
 	   def job = new org.jenkinsci.plugins.workflow.job.WorkflowJob(parent, item)
 	   job.definition = flowDefinition
+	   ParameterDefinition[] newParameters = [
+              new StringParameterDefinition("PACKAGE", item, ""),
+  	      new StringParameterDefinition("PACKAGE_BRANCH", branch, ""),
+           ];
+           job.removeProperty(ParametersDefinitionProperty.class)
+           job.addProperty(new ParametersDefinitionProperty(newParameters))
+           job.addTrigger(new TimerTrigger(cronTrigger))
 	   parent.reload()
-	   println("git://gitcentos.mvista.com/centos/upstream/packages/" + item)
    }
-}
-jobs = Jenkins.instance.getAllItems(Job.class)
-for (j in jobs) {
-  if ( ! j.getLastBuild() ) {
-     j.scheduleBuild();
-  }
 }
