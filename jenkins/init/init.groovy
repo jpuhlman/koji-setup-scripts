@@ -41,7 +41,7 @@ if (installed) {
   instance.save()
   instance.restart()
 } else {
-  instance.setNumExecutors(20)
+  instance.setNumExecutors(5)
   instance.save()
 }
 
