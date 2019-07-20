@@ -8,7 +8,7 @@ def strategy = new GlobalMatrixAuthorizationStrategy()
 
 def repo = "git://gitcentos.mvista.com/centos/upstream/utils/centos-updates.git"
 def branch = "c7-mv"
-def cronTrigger = "H/5 * * * *"
+def cronTrigger = "H/20 * * * *"
 
 instance = Jenkins.getInstance()
 globalNodeProperties = instance.getGlobalNodeProperties()
@@ -25,13 +25,14 @@ if ( envVarsNodePropertyList == null || envVarsNodePropertyList.size() == 0 ) {
   envVars = envVarsNodePropertyList.get(0).getEnvVars()
 }
 
-envVars.put("DIST_TAG", "dist-centos-updates")
+envVars.put("DIST_TAG", "dist-centos-updates-mv")
 
 instance.save()
 Jenkins.instance.doQuietDown()
 instance.save()
 String fileContents = new File('/var/jenkins_home/app.list').getText('UTF-8')
-
+def jobAdded = false
+def jobTriggered = false
 for (String item: fileContents.split()) {
    if ( !Jenkins.instance.getItemByFullName(item) ) {
            def scm = new GitSCM(repo)
@@ -47,9 +48,31 @@ for (String item: fileContents.split()) {
            ];
            job.removeProperty(ParametersDefinitionProperty.class)
            job.addProperty(new ParametersDefinitionProperty(newParameters))
-           job.addTrigger(new TimerTrigger(cronTrigger))
 	   parent.reload()
+           jobAdded = true
    }
 }
 Jenkins.instance.doCancelQuietDown()
 instance.save()
+jobs = Jenkins.instance.getAllItems(Job.class)
+for (j in jobs) {
+       if ( ! j.getLastBuild() ) {
+          j.scheduleBuild();
+          jobTriggered = true
+       }
+}
+if ( jobTriggered ) {
+   sleep(10000)
+   def q = Jenkins.instance.queue
+   while (q.items) {
+      println("waiting for first buids to complete")
+      sleep 30000
+   }
+   println("All jobs complete")
+   println("Adding timers to jobs")
+   for (j in jobs) {
+       if ( ! j.getTriggers() ) {
+          j.addTrigger(new TimerTrigger(cronTrigger))
+       }
+   }
+}
