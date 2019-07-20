@@ -1,8 +1,5 @@
 FROM jenkins/jenkins:lts
 USER root
-RUN mkdir -p /usr/local/share/ca-certificates/extra
-COPY ./serverca.crt /usr/local/share/ca-certificates/extra/
-RUN update-ca-certificates
 RUN apt-get update 
 RUN apt-get install -y koji-client
 RUN apt-get install -y python-krbv
@@ -13,4 +10,7 @@ RUN apt-get update \
     && update-locale LANG=en_US.UTF-8
 ENV LANG en_US.UTF-8 
 ENV LC_ALL en_US.UTF-8 
+RUN mkdir -p /usr/local/share/ca-certificates/extra
+COPY ./serverca.crt /usr/local/share/ca-certificates/extra/
+RUN update-ca-certificates
 USER jenkins
