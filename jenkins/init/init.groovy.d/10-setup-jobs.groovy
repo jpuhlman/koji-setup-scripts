@@ -3,6 +3,7 @@ import hudson.slaves.EnvironmentVariablesNodeProperty
 import jenkins.model.Jenkins
 import hudson.model.*
 import hudson.security.*
+import hudson.triggers.*
 def strategy = new GlobalMatrixAuthorizationStrategy()
 
 def repo = "git://gitcentos.mvista.com/centos/upstream/utils/centos-updates.git"
@@ -27,8 +28,9 @@ if ( envVarsNodePropertyList == null || envVarsNodePropertyList.size() == 0 ) {
 envVars.put("DIST_TAG", "dist-centos-updates")
 
 instance.save()
-
-String fileContents = new File('/var/jenkins_home/apps').getText('UTF-8')
+Jenkins.instance.doQuietDown()
+instance.save()
+String fileContents = new File('/var/jenkins_home/app.list').getText('UTF-8')
 
 for (String item: fileContents.split()) {
    if ( !Jenkins.instance.getItemByFullName(item) ) {
@@ -49,3 +51,5 @@ for (String item: fileContents.split()) {
 	   parent.reload()
    }
 }
+Jenkins.instance.doCancelQuietDown()
+instance.save()
