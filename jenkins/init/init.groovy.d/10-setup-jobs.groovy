@@ -36,7 +36,10 @@ def jobTriggered = false
 for (String item: fileContents.split()) {
    if ( !Jenkins.instance.getItemByFullName(item) ) {
            def scm = new GitSCM(repo)
+           def config = new UserRemoteConfig(repo, "common", null, null)
            scm.branches = [new BranchSpec("*/" + branch)];
+           scm.userRemoteConfigs = [config]
+
            def flowDefinition = new org.jenkinsci.plugins.workflow.cps.CpsScmFlowDefinition(scm, "Jenkinsfile")
 
 	   def parent = Jenkins.instance
@@ -56,23 +59,7 @@ Jenkins.instance.doCancelQuietDown()
 instance.save()
 jobs = Jenkins.instance.getAllItems(Job.class)
 for (j in jobs) {
-       if ( ! j.getLastBuild() ) {
-          j.scheduleBuild();
-          jobTriggered = true
-       }
-}
-if ( jobTriggered ) {
-   sleep(10000)
-   def q = Jenkins.instance.queue
-   while (q.items) {
-      println("waiting for first buids to complete")
-      sleep 30000
-   }
-   println("All jobs complete")
-   println("Adding timers to jobs")
-   for (j in jobs) {
-       if ( ! j.getTriggers() ) {
-          j.addTrigger(new TimerTrigger(cronTrigger))
-       }
-   }
+    if ( ! j.getTriggers() ) {
+        j.addTrigger(new SCMTrigger(cronTrigger))
+    }
 }
