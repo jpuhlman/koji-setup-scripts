@@ -7,7 +7,7 @@ After=docker.service
 Restart=always
 ExecStartPre=-/usr/bin/docker kill jenkins-mv
 ExecStartPre=-/usr/bin/docker rm jenkins-mv
-ExecStart=/usr/bin/docker run --name jenkins-mv --ulimit nofile=122880:122880 -p 8080:8080 -p 50000:50000 -v /home/cluge/jenkins:/var/jenkins_home -t jenkins-mv:latest 
+ExecStart=/usr/bin/docker run --name jenkins-mv --ulimit nofile=122880:122880 -p 8080:8080 -p 50000:50000 --env JAVA_OPTS="-Djenkins.install.runSetupWizard=false" -v /home/cluge/jenkins:/var/jenkins_home -t jenkins-mv:latest 
 ExecStop=/usr/bin/docker stop -t 2 jenkins-mv
 
 [Install]
