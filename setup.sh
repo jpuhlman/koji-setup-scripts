@@ -29,10 +29,4 @@ popd
 
 sudo -E ./koji-setup/deploy-mash.sh
 systemctl status mash
-bash ./build-rpm
-
-sudo docker build jenkins-mv -t jenkins-mv:latest
-
-mkdir -p jenkins
-cp -a .koji jenkins/
-sudo mkdir -p /srv/jenkins
+bash ./build-rpm.sh
