@@ -1,5 +1,4 @@
 #!/bin/bash -e
-if false; then
 if [ -z "$(sudo grep "^jenkins\ " /etc/sudoers.d/visudo 2>/dev/null)" ] ; then
    echo -n "Root " 
    su -c "mkdir -p /etc/sudoers.d/; echo 'jenkins ALL=(ALL) NOPASSWD: ALL' | tee -a /etc/sudoers.d/visudo"
@@ -14,7 +13,7 @@ sudo ./gencert.sh jenkins "/C=$COUNTRY_CODE/ST=$STATE/L=$LOCATION/O=$ORGANIZATIO
 sudo cp /home/kojiadmin/.koji/config /tmp/config-koji
 popd
 
-mkdir -p ~/.koji && cd $_
+mkdir -p ~/.koji && pushd $_
 cp /etc/pki/koji/jenkins.pem .
 cp -v jenkins.pem client.crt
 cp /etc/pki/koji/koji_ca_cert.crt .
@@ -26,15 +25,14 @@ sudo mkdir -p /etc/ca-certs/trusted
 sudo cp serverca.crt /etc/ca-certs/trusted/
 sudo clrtrust generate
 koji moshimoshi
+popd
 
-pushd ~/koji-setup-scripts/
 sudo -E ./koji-setup/deploy-mash.sh
 systemctl status mash
-else
+bash ./build-rpm
 
 sudo docker build jenkins-mv -t jenkins-mv:latest
-popd
+
 mkdir -p jenkins
 cp -a .koji jenkins/
 sudo mkdir -p /srv/jenkins
-fi
