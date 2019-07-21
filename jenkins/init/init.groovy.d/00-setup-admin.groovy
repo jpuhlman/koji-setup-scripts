@@ -52,7 +52,7 @@ instance.save()
 
 //fix complaint amount missing URL setting.
 jlc = JenkinsLocationConfiguration.get()
-jlc.setUrl("http://bn1slave-109.mvista.com:8080/")
+jlc.setUrl("http://jptest03.mvista.com:8080/")
 jlc.save()
 
 //fix You have not configured the CSRF issuer. This could be a security issue.
