@@ -3,6 +3,7 @@ if [ -z "$(sudo grep "^jenkins\ " /etc/sudoers.d/visudo 2>/dev/null)" ] ; then
    echo -n "Root " 
    su -c "mkdir -p /etc/sudoers.d/; echo 'jenkins ALL=(ALL) NOPASSWD: ALL' | tee -a /etc/sudoers.d/visudo"
 fi
+chmod 755 ~
 sudo -E ./koji-setup/deploy-koji.sh
 sudo -E ./koji-setup/bootstrap-build.sh
 sudo -u kojiadmin koji moshimoshi
