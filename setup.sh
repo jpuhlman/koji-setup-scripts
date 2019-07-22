@@ -1,5 +1,5 @@
 #!/bin/bash -e
-if [ -z "$(sudo grep "^jenkins\ " /etc/sudoers.d/visudo 2>/dev/null)" ] ; then
+if ! sudo -n ls >/dev/null 2>/dev/null ; then
    echo -n "Root " 
    su -c "mkdir -p /etc/sudoers.d/; echo 'jenkins ALL=(ALL) NOPASSWD: ALL' | tee -a /etc/sudoers.d/visudo"
 fi
