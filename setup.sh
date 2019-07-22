@@ -30,3 +30,4 @@ popd
 sudo -E ./koji-setup/deploy-mash.sh
 systemctl status mash
 bash ./build-rpm.sh
+bash ./setup-jenkins.sh
