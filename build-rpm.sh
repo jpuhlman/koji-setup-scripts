@@ -12,6 +12,7 @@ cd clearlinux
 pwd
 make clone_rpm PKG_BASE_URL=git://gitcentos.mvista.com/centos/upstream/utils
 pwd
+sleep 10
 cd packages/rpm
 pwd
 make build
