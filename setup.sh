@@ -4,6 +4,7 @@ if ! sudo -n ls >/dev/null 2>/dev/null ; then
    su -c "mkdir -p /etc/sudoers.d/; echo 'jenkins ALL=(ALL) NOPASSWD: ALL' | tee -a /etc/sudoers.d/visudo"
 fi
 chmod 755 ~
+bash ./build-rpm.sh
 sudo -E ./koji-setup/deploy-koji.sh
 sudo -E ./koji-setup/bootstrap-build.sh
 sudo -u kojiadmin koji moshimoshi
@@ -30,5 +31,4 @@ popd
 
 sudo -E ./koji-setup/deploy-mash.sh
 systemctl status mash
-bash ./build-rpm.sh
 bash ./setup-jenkins.sh
